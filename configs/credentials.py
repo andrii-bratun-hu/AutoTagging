@@ -1,3 +1,5 @@
+# credentials for data access
+
 snowflake_login = {
         'username' : 'abratun',
         'password' : 'bfr*nfx0wga1RYH7eup',

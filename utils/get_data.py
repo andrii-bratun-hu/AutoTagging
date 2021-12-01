@@ -4,15 +4,6 @@ import snowflake.connector as sf
 from snowflake.connector import DictCursor
 from configs.credentials import snowflake_login
 
-snowflake_connector = sf.connect(
-    user=snowflake_login['username'],
-    password=snowflake_login['password'],
-    account=snowflake_login['account']
-)
-
-snowflake_cursor = snowflake_connector.cursor(DictCursor)
-snowflake_cursor.execute('USE DATABASE HU_DATA')
-
 def get_posts(query : str):
     """
     Pull posts from snowflake
@@ -21,6 +12,15 @@ def get_posts(query : str):
 
     returns: dataframe with post text
     """
+
+    snowflake_connector = sf.connect(
+        user=snowflake_login['username'],
+        password=snowflake_login['password'],
+        account=snowflake_login['account']
+    )
+
+    snowflake_cursor = snowflake_connector.cursor(DictCursor)
+    snowflake_cursor.execute('USE DATABASE HU_DATA')
 
     # create query
     snowflake_cursor.execute(query)

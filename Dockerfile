@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 
 WORKDIR /service
 
@@ -12,4 +12,4 @@ COPY ./ /service
 
 EXPOSE 3143
 
-CMD ["python", "run.py"]
+CMD ["python", "app.py"]
