@@ -128,6 +128,7 @@ def bertopic_train(data: TopicRetrainSite):
     """
     try:
         # Get data
+
         site = data.dict()['site']
         query = get_snowflake_query(site)
         posts_df = get_posts(query)
