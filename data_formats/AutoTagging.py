@@ -29,6 +29,15 @@ class TopicData(BaseModel):
             raise ValueError('must be int if grater than one')
         return v
 
+# Class which describes Topic retrain measurements
+class TopicRetrainSite(BaseModel):
+    """generic class for topic retrain data types
+
+    Attributes:
+        site: name of the site
+    """
+    site: str
+
 # Class which describes KeyWord measurements
 class KeyWordData(BaseModel):
     """generic class for topic data types

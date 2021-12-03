@@ -3,6 +3,9 @@ warnings.filterwarnings("ignore")
 
 import ast
 import logging
+from datetime import datetime
+from utils.get_data import get_posts
+from data_queries.snowflake_query import get_snowflake_query
 
 import tqdm
 tqdm.tqdm.pandas()
@@ -20,14 +23,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 vectorizer_model= CountVectorizer(ngram_range=(1, 3), stop_words="english")
 topic_model = BERTopic(vectorizer_model=vectorizer_model)
-topic_model = topic_model.load('models_artifact/BERTopic.bin')
+topic_model = topic_model.load('models_artifact/BERTopic_WP_2021_12_03_15_16_29.bin')
 
 # API configuration
 PORT = api_config['port']
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from data_formats.AutoTagging import KeyWordData, TopicData
+from data_formats.AutoTagging import KeyWordData, TopicData, TopicRetrainSite
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -60,7 +63,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/', tags=["ping_pong"], summary="Check if API response to query")
+@app.get('/', tags=["ping_pong"], summary="Check if API response to query", include_in_schema=False)
 def ping():
     return 'pong'
 
@@ -106,6 +109,46 @@ def bertopic_extractor(data: TopicData):
             result = [list(map(lambda x: x[0], post_keyword))[:keywords_number] for post_keyword in keywords]
 
         return {'post_ids': post_ids, 'keywords': result}
+
+    except Exception as e:
+        return str(e)
+
+@app.post('/api/bertopic_train', tags=["topic"], summary="train new model for specified disease")
+def bertopic_train(data: TopicRetrainSite):
+    """
+    Train new model for specified disease on a new data
+
+    - **site**: name of the site
+
+    Sample input:
+     - {"site": "RA"}
+
+    Sample output:
+     - 'Training was succes'
+    """
+    try:
+        # Get data
+        site = data.dict()['site']
+        query = get_snowflake_query(site)
+        posts_df = get_posts(query)
+
+        if posts_df.empty:
+            return 'site does not have any posts!'
+
+        # Clean post content
+        preprocessed_posts = preprocess_topic(posts_df.POST_CONTENT.tolist())
+
+        # Define model
+        vectorizer_model = CountVectorizer(ngram_range=(1, 3), stop_words="english")
+        topic_model = BERTopic(vectorizer_model=vectorizer_model)
+
+        # Train model
+        topic_model.fit(preprocessed_posts)
+
+        # Save model
+        topic_model.save(f'models_artifact/BERTopic_{site}_{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.bin')
+
+        return 'Training was succes'
 
     except Exception as e:
         return str(e)
