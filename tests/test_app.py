@@ -2,6 +2,7 @@ import warnings
 import snowflake.connector as sf
 from configs.credentials import snowflake_login
 
+
 from fastapi.testclient import TestClient
 from app import app
 client = TestClient(app)
