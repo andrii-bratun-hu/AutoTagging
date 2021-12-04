@@ -6,14 +6,7 @@ from fastapi.testclient import TestClient
 from app import app
 client = TestClient(app)
 
-
-
-
-
-
-
-
-
+# Tests
 def test_snowflake_connection():
     try:
         snowflake_connector = sf.connect(
